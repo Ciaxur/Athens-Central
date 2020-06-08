@@ -1,0 +1,11 @@
+.Bulbs-Color {
+    width: 10px;
+    height: 10px;
+    background-color: black;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.bulb-item {
+    cursor: pointer;
+}
