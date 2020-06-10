@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import axios from 'axios';
 import './Bulbs.css';
 
-const LIGHTS_IP = "http://localhost:3000";
+const LIGHTS_IP = "192.168.0.97:3000";
 
 interface Props {}
 interface States {
@@ -33,7 +33,7 @@ class Bulbs extends Component<Props, States> {
     componentDidMount() {
         const updateBulbInfo = () => {
             // Query Bulbs
-            axios.get(`${LIGHTS_IP}/lights`)
+            axios.get(`http://${LIGHTS_IP}/lights`)
                 .then(res => {
                     // Sort Results based on Address
                     res.data = (res.data as BulbsQuery[])
@@ -54,7 +54,7 @@ class Bulbs extends Component<Props, States> {
      * @param bulb - Bulb to Trigger
      */
     private bulbTrigger(bulb: BulbsQuery) {
-        axios.post(`${LIGHTS_IP}/lights`, {
+        axios.post(`http://${LIGHTS_IP}/lights`, {
             bulbAddr:       bulb.address,
             action:         "setPower",
             actionValue:    !bulb.power
