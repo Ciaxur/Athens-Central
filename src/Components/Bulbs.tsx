@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 import axios from 'axios';
 import './Bulbs.css';
+import calendar from '../Resources/images/calendar.png';
+import Icon from './Icon';
 
 const LIGHTS_IP = "192.168.0.97:3000";
 
@@ -9,6 +11,7 @@ interface States {
     bulbs: BulbsQuery[],
 }
 interface BulbsQuery {
+    name: string,
     address: string,
     power: boolean,
     color: { red: number, green: number, blue: number },
@@ -18,6 +21,10 @@ interface BulbsQuery {
 
 
 class Bulbs extends Component<Props, States> {
+    // Indicate Manual Bulb State Update so that
+    //  interval update doesn't mess with updating States
+    private manualUpdate: boolean;
+    
     constructor(props: Props) {
         super(props);
 
@@ -25,6 +32,7 @@ class Bulbs extends Component<Props, States> {
         this.state = {
             bulbs: []
         };
+        this.manualUpdate = false;
         
         // Bind Methods
         this.bulbTrigger = this.bulbTrigger.bind(this);
@@ -40,9 +48,17 @@ class Bulbs extends Component<Props, States> {
                         .sort((a, b) => a.address > b.address ? 1 : -1);
                     
                     // Update State
-                    this.setState({
-                        bulbs: res.data
-                    });
+                    if (!this.manualUpdate) {
+                        this.setState({
+                            bulbs: res.data
+                        });
+                    } 
+                    
+                    // Reset Manual Update State
+                    else {
+                        this.manualUpdate = false;
+                    }
+
                 });
         };
         updateBulbInfo();
@@ -59,6 +75,7 @@ class Bulbs extends Component<Props, States> {
             action:         "setPower",
             actionValue:    !bulb.power
         }).then(() => { // Update State
+            this.manualUpdate = true;
             bulb.power =!bulb.power;
             this.setState({bulbs: this.state.bulbs});
         });
@@ -66,15 +83,33 @@ class Bulbs extends Component<Props, States> {
     
     render() {
         return (
-            <div>
-                {/* Display Bulbs and their Current Color States */}
-                { this.state?.bulbs.map((bulb, index) => 
-                    <div className="bulb-item" key={index} onClick={() => this.bulbTrigger(bulb)}>
-                        <span className="Bulbs-Color" style={{
-                            background: `rgb(${bulb.color.red}, ${bulb.color.green}, ${bulb.color.blue})`
-                            }}/> {bulb.address} [{bulb.power ? "On" : "Off"}]
-                    </div>
-                )}
+            <div className="bulb-container">
+
+                <div className="col-3"/>
+                <div className="col-3 text-left">
+                    {/* Display Bulbs and their Current Color States */}
+                    {this.state?.bulbs.map((bulb, index) =>
+                        <div className="bulb-item" key={index} >
+                            
+                            {/* Calendar */}
+                            <Icon img={calendar} width="18px" height="18px" />
+
+                            {/* Color Indicator */}
+                            <span className="bulb-color" style={{
+                                background: `rgba(${bulb.color.red}, ${bulb.color.green}, ${bulb.color.blue}, ${bulb.power ? 1.0 : 0.1})`
+                            }} /> 
+
+                            {/* Lamp Name and Address */}
+                            <span className="clickable" onClick={() => this.bulbTrigger(bulb)} >
+                                {bulb.name} <span style={{ fontSize: '12px' }}> {bulb.address}</span>
+                            </span>
+
+                        </div>
+                    )}
+                </div>
+                <div className="col-3"/>
+
+                
             </div>
         )
     }

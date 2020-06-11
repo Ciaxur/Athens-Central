@@ -1,11 +1,30 @@
-.Bulbs-Color {
+.bulb-container div {
+    color: #2F5373;
+    font-size: 16px;
+}
+
+.col-3 {
+    width: 33.33%;
+    display: inline-block;
+}
+
+.text-left {
+    text-align: left;
+}
+
+.bulb-color {
     width: 10px;
     height: 10px;
     background-color: black;
     border-radius: 50%;
     display: inline-block;
+    margin: 0px 5px;
 }
 
 .bulb-item {
+    margin: 10px 0px;
+}
+
+.clickable {
     cursor: pointer;
 }
