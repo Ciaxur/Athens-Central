@@ -59,7 +59,6 @@ class Bulbs extends Component<Props, States> {
         this.bulbTrigger = this.bulbTrigger.bind(this);
         this.handleColorChange = this.handleColorChange.bind(this);
         this.handleColorComplete = this.handleColorComplete.bind(this);
-        this.handleContainerClick = this.handleContainerClick.bind(this);
         this.triggerBulbTemperature = this.triggerBulbTemperature.bind(this);
     }
 
@@ -112,18 +111,6 @@ class Bulbs extends Component<Props, States> {
     }
 
     /**
-     * Handles Container Click
-     * Close out of Color Picker when clicked
-     *  outside of it
-     * @param event - MouseEvent Object
-     */
-    private handleContainerClick(event: React.MouseEvent) {
-        if(event.target === event.currentTarget) {
-            this.setState({ currentBulbAddr: null });
-        }
-    }
-
-    /**
      * Updates the Color Picker's Color State
      *  as soon as Color Changes
      * @param color - Color Result of Picker
@@ -162,6 +149,10 @@ class Bulbs extends Component<Props, States> {
                     // Update Temperature Color
                     b.cold_white = 0;
                     b.warm_white = 0;
+
+                    // Make sure that Bulb IS on
+                    //  - turns on even if in off state
+                    b.power = true;
                     
                     this.manualUpdate = true;
                     this.setState({ currentBulbAddr: b.address });
@@ -223,7 +214,7 @@ class Bulbs extends Component<Props, States> {
     
     render() {
         return (
-            <div onClick={this.handleContainerClick} className="bulb-container">
+            <div className="bulb-container">
 
                 <div className="col-3"/>
                 <div className="col-4 text-left">
