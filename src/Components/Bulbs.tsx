@@ -47,6 +47,7 @@ class Bulbs extends Component<Props, States> {
         this.bulbTrigger = this.bulbTrigger.bind(this);
         this.handleColorChange = this.handleColorChange.bind(this);
         this.handleColorComplete = this.handleColorComplete.bind(this);
+        this.handleContainerClick = this.handleContainerClick.bind(this);
     }
 
     /**
@@ -97,7 +98,23 @@ class Bulbs extends Component<Props, States> {
         });
     }
 
+    /**
+     * Handles Container Click
+     * Close out of Color Picker when clicked
+     *  outside of it
+     * @param event - MouseEvent Object
+     */
+    private handleContainerClick(event: React.MouseEvent) {
+        if(event.target === event.currentTarget) {
+            this.setState({ currentBulbAddr: null });
+        }
+    }
 
+    /**
+     * Updates the Color Picker's Color State
+     *  as soon as Color Changes
+     * @param color - Color Result of Picker
+     */
     private handleColorChange(color: ColorResult) {
         // Update Color Picker State
         this.setState({ 
@@ -105,6 +122,12 @@ class Bulbs extends Component<Props, States> {
         });
     }
 
+    /**
+     * Once Color Change has Complete
+     *  Request Bulb Color Change, then
+     *  update the Color Icon to match change
+     * @param color - Color Result of Color Picker
+     */
     private handleColorComplete(color: ColorResult) {
         // Update Light Bulb's Color
         if(!this.state.currentBulbAddr) return;
@@ -112,16 +135,35 @@ class Bulbs extends Component<Props, States> {
             bulbAddr:       this.state.currentBulbAddr,
             action:         "rgb",
             rgb:            color.rgb
+        }).then(() => {
+            // Update Color Icon to match Color Picker on Change
+            for(const b of this.state.bulbs) {
+                if(b.address === this.state.currentBulbAddr) {
+                    b.color = {
+                        red: this.state.pickerColor.r,
+                        blue: this.state.pickerColor.b,
+                        green: this.state.pickerColor.g
+                    };
+                    this.manualUpdate = true;
+                    this.setState({ currentBulbAddr: b.address });
+                    return;
+                }
+            }
         });
     }
 
+    /**
+     * Handle which Bulb Color Icon was picked
+     *  to change
+     * @param bulb - The Bulb that will be used to change colors
+     */
     private handleColorIcon(bulb: BulbsQuery) {
         // Toggle Off if same Bulb
         if(this.state.currentBulbAddr === bulb.address) {
             this.setState({ currentBulbAddr: null });
             return;
         }
-        
+
         // Set as Current Active Bulb
         // Update Color Picker Color
         this.setState({ 
@@ -136,7 +178,7 @@ class Bulbs extends Component<Props, States> {
     
     render() {
         return (
-            <div className="bulb-container">
+            <div onClick={this.handleContainerClick} className="bulb-container">
 
                 <div className="col-3"/>
                 <div className="col-3 text-left">
