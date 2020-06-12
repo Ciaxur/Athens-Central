@@ -207,6 +207,10 @@ class Bulbs extends Component<Props, States> {
                 bulb.warm_white = 0
                 bulb.cold_white = 100
             }
+
+            // Make sure that Bulb IS on
+            //  - turns on even if in off state
+            bulb.power = true;
             
             this.setState({bulbs: this.state.bulbs});
         });
