@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import { SketchPicker, ColorResult, RGBColor } from 'react-color';
 import axios from 'axios';
 import './Bulbs.css';
 import calendar from '../Resources/images/calendar.png';
@@ -8,7 +9,9 @@ const LIGHTS_IP = "192.168.0.97:3000";
 
 interface Props {}
 interface States {
-    bulbs: BulbsQuery[],
+    bulbs: BulbsQuery[],                // List of all Bulbs' Info
+    currentBulbAddr: string | null,     // Current Bulb in Focus
+    pickerColor: RGBColor,              // Color Picker's Current Color
 }
 interface BulbsQuery {
     name: string,
@@ -30,14 +33,27 @@ class Bulbs extends Component<Props, States> {
 
         // Set inital States
         this.state = {
-            bulbs: []
+            bulbs: [],
+            currentBulbAddr: null,
+            pickerColor: {
+                r: 255,
+                g: 255,
+                b: 255
+            }
         };
         this.manualUpdate = false;
         
         // Bind Methods
         this.bulbTrigger = this.bulbTrigger.bind(this);
+        this.handleColorChange = this.handleColorChange.bind(this);
+        this.handleColorComplete = this.handleColorComplete.bind(this);
     }
 
+    /**
+     * Update Bulb information
+     * Create an Interval for Updating every couple
+     *  seconds
+     */
     componentDidMount() {
         const updateBulbInfo = () => {
             // Query Bulbs
@@ -80,6 +96,43 @@ class Bulbs extends Component<Props, States> {
             this.setState({bulbs: this.state.bulbs});
         });
     }
+
+
+    private handleColorChange(color: ColorResult) {
+        // Update Color Picker State
+        this.setState({ 
+            pickerColor: color.rgb
+        });
+    }
+
+    private handleColorComplete(color: ColorResult) {
+        // Update Light Bulb's Color
+        if(!this.state.currentBulbAddr) return;
+        axios.post(`http://${LIGHTS_IP}/lights`, {
+            bulbAddr:       this.state.currentBulbAddr,
+            action:         "rgb",
+            rgb:            color.rgb
+        });
+    }
+
+    private handleColorIcon(bulb: BulbsQuery) {
+        // Toggle Off if same Bulb
+        if(this.state.currentBulbAddr === bulb.address) {
+            this.setState({ currentBulbAddr: null });
+            return;
+        }
+        
+        // Set as Current Active Bulb
+        // Update Color Picker Color
+        this.setState({ 
+            currentBulbAddr: bulb.address,
+            pickerColor: {
+                r: bulb.color.red,
+                g: bulb.color.green,
+                b: bulb.color.blue
+            }
+        });
+    }
     
     render() {
         return (
@@ -95,9 +148,23 @@ class Bulbs extends Component<Props, States> {
                             <Icon img={calendar} width="18px" height="18px" />
 
                             {/* Color Indicator */}
-                            <span className="bulb-color" style={{
-                                background: `rgba(${bulb.color.red}, ${bulb.color.green}, ${bulb.color.blue}, ${bulb.power ? 1.0 : 0.1})`
-                            }} /> 
+                            <span 
+                                onClick={() => { this.handleColorIcon(bulb) }} 
+                                className="bulb-color" style={{
+                                    background: `rgba(${bulb.color.red}, ${bulb.color.green}, ${bulb.color.blue}, ${bulb.power ? 1.0 : 0.1})`
+                            }} />
+
+
+                            {/* Color Wheel Display */}
+                            {(this.state.currentBulbAddr !== null && this.state.currentBulbAddr === bulb.address) ?
+                                <div style={{ position: 'absolute', zIndex: 2 }}>
+                                    <SketchPicker
+                                        color={this.state.pickerColor}
+                                        onChange={this.handleColorChange}
+                                        onChangeComplete={this.handleColorComplete}
+                                    />
+                                </div> : <span />
+                            }
 
                             {/* Lamp Name and Address */}
                             <span className="clickable" onClick={() => this.bulbTrigger(bulb)} >
@@ -106,6 +173,7 @@ class Bulbs extends Component<Props, States> {
 
                         </div>
                     )}
+
                 </div>
                 <div className="col-3"/>
 
