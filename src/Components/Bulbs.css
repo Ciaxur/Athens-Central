@@ -4,7 +4,12 @@
 }
 
 .col-3 {
-    width: 33.33%;
+    width: 30%;
+    display: inline-block;
+}
+
+.col-4 {
+    width: 40%;
     display: inline-block;
 }
 
@@ -16,6 +21,7 @@
     width: 10px;
     height: 10px;
     background-color: black;
+    border: solid 1px rgba(47,83,115,0.2);
     border-radius: 50%;
     display: inline-block;
     margin: 0px 5px;

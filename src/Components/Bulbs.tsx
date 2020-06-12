@@ -3,9 +3,21 @@ import { SketchPicker, ColorResult, RGBColor } from 'react-color';
 import axios from 'axios';
 import './Bulbs.css';
 import calendar from '../Resources/images/calendar.png';
+import coldTemp from '../Resources/images/cold-temp.png';
+import warmTemp from '../Resources/images/warm-temp.png';
 import Icon from './Icon';
 
 const LIGHTS_IP = "192.168.0.97:3000";
+const PRESET_CLRS: string[] = [
+    '#4A90E2',
+    '#50E3C2',
+    '#B8E986',
+    '#BD10E0',
+    '#9013FE',
+    '#7ED321',
+    '#F5A623',
+    '#FFF'
+];
 
 interface Props {}
 interface States {
@@ -48,6 +60,7 @@ class Bulbs extends Component<Props, States> {
         this.handleColorChange = this.handleColorChange.bind(this);
         this.handleColorComplete = this.handleColorComplete.bind(this);
         this.handleContainerClick = this.handleContainerClick.bind(this);
+        this.triggerBulbTemperature = this.triggerBulbTemperature.bind(this);
     }
 
     /**
@@ -139,11 +152,17 @@ class Bulbs extends Component<Props, States> {
             // Update Color Icon to match Color Picker on Change
             for(const b of this.state.bulbs) {
                 if(b.address === this.state.currentBulbAddr) {
+                    // Update RGB Color
                     b.color = {
                         red: this.state.pickerColor.r,
                         blue: this.state.pickerColor.b,
                         green: this.state.pickerColor.g
                     };
+
+                    // Update Temperature Color
+                    b.cold_white = 0;
+                    b.warm_white = 0;
+                    
                     this.manualUpdate = true;
                     this.setState({ currentBulbAddr: b.address });
                     return;
@@ -175,19 +194,59 @@ class Bulbs extends Component<Props, States> {
             }
         });
     }
+
+    /**
+     * Trigger Cold or Warm White
+     * @param bulb - Bulb being Set
+     * @param temp - Temperature of Bulb
+     */
+    private triggerBulbTemperature(bulb: BulbsQuery, temp: 'warm' | 'cold') {
+        axios.post(`http://${LIGHTS_IP}/lights`, {
+            bulbAddr:       bulb.address,
+            action:         temp === 'warm' ? 'setWarm' : 'setCold',
+            actionValue:    100
+        }).then(() => { // Update State
+            this.manualUpdate = true;
+
+            if(temp === 'warm') {
+                bulb.warm_white = 100
+                bulb.cold_white = 0
+            }
+            else {
+                bulb.warm_white = 0
+                bulb.cold_white = 100
+            }
+            
+            this.setState({bulbs: this.state.bulbs});
+        });
+    }
     
     render() {
         return (
             <div onClick={this.handleContainerClick} className="bulb-container">
 
                 <div className="col-3"/>
-                <div className="col-3 text-left">
+                <div className="col-4 text-left">
                     {/* Display Bulbs and their Current Color States */}
                     {this.state?.bulbs.map((bulb, index) =>
                         <div className="bulb-item" key={index} >
                             
                             {/* Calendar */}
                             <Icon img={calendar} width="18px" height="18px" />
+
+                            {/* Temperatures */}
+                            <span 
+                                className="clickable" 
+                                onClick={() => this.triggerBulbTemperature(bulb, 'cold')} style={{ opacity: bulb.cold_white ? 1.0 : 0.4 }}>
+
+                                <Icon img={coldTemp} width="18px" height="18px" />
+                            </span>
+                            <span 
+                                className="clickable" 
+                                onClick={() => this.triggerBulbTemperature(bulb, 'warm')} style={{ opacity: bulb.warm_white ? 1.0 : 0.4 }}>
+
+                                <Icon img={warmTemp} width="18px" height="18px" />
+                            </span>
 
                             {/* Color Indicator */}
                             <span 
@@ -204,12 +263,13 @@ class Bulbs extends Component<Props, States> {
                                         color={this.state.pickerColor}
                                         onChange={this.handleColorChange}
                                         onChangeComplete={this.handleColorComplete}
+                                        presetColors={PRESET_CLRS}
                                     />
                                 </div> : <span />
                             }
 
                             {/* Lamp Name and Address */}
-                            <span className="clickable" onClick={() => this.bulbTrigger(bulb)} >
+                            <span className="clickable" onClick={() => this.bulbTrigger(bulb)} style={{ opacity: bulb.power ? 1.0 : 0.6 }} >
                                 {bulb.name} <span style={{ fontSize: '12px' }}> {bulb.address}</span>
                             </span>
 
