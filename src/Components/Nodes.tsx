@@ -73,12 +73,14 @@ class Nodes extends Component<Props, State> {
             return bat_low;
     }
     
-    render() { return (
+    render() { 
+        console.log(this.state);
+        return (
         <div>
             <div className="col-3" />
             <div className="col-4 text-center"> 
+                {/* Name, Address, and Battery */}
                 {this.state?.nodes.map((node, index) =>
-                    // Name, Address, and Battery
                     <span key={index} style={{ opacity: node.status === 'online' ? 1.0 : 0.6 }}>
                         <Icon 
                             img={this.getBatteryImage(node.battery)} 
