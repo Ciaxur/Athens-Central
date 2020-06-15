@@ -50,8 +50,8 @@ class Nodes extends Component<Props, State> {
         };
         updateNodes();
 
-        // Every 2min
-        setInterval(updateNodes, 1000 * 60 * 2);
+        // Every 3 Seconds
+        setInterval(updateNodes, 1000 * 3);
     }
 
 
@@ -73,25 +73,25 @@ class Nodes extends Component<Props, State> {
             return bat_low;
     }
     
-    render() { 
-        console.log(this.state);
+    render() {
         return (
-        <div>
-            <div className="col-3" />
-            <div className="col-4 text-center"> 
-                {/* Name, Address, and Battery */}
-                {this.state?.nodes.map((node, index) =>
-                    <span key={index} style={{ opacity: node.status === 'online' ? 1.0 : 0.6 }}>
-                        <Icon 
-                            img={this.getBatteryImage(node.battery)} 
-                            width="18px" 
-                            height="18px" />
-                        {node.name} <span style={{ fontSize: '12px' }}> {node.address} </span>
-                    </span>
-                )}
+            <div>
+                <div className="col-3" />
+                <div className="col-4 text-center">
+                    {/* Name, Address, and Battery */}
+                    {this.state?.nodes.map((node, index) =>
+                        <span key={index} style={{ opacity: node.status === 'online' ? 1.0 : 0.6 }}>
+                            <Icon
+                                img={this.getBatteryImage(node.battery)}
+                                width="18px"
+                                height="18px" />
+                            {node.name} <span style={{ fontSize: '12px' }}> {node.address} </span>
+                        </span>
+                    )}
+                </div>
+                <div className="col-3" />
             </div>
-            <div className="col-3" />
-        </div>
-    )}
+        )
+    }
 }
 export default Nodes;
