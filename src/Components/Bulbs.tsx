@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { SketchPicker, ColorResult, RGBColor } from 'react-color';
 import axios from 'axios';
-import './Bulbs.css';
+import './Components.css';
 import calendar from '../Resources/images/calendar.png';
 import coldTemp from '../Resources/images/cold-temp.png';
 import warmTemp from '../Resources/images/warm-temp.png';
@@ -218,7 +218,7 @@ class Bulbs extends Component<Props, States> {
     
     render() {
         return (
-            <div className="bulb-container">
+            <div className="container">
 
                 <div className="col-3"/>
                 <div className="col-4 text-left">

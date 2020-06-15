@@ -1,4 +1,4 @@
-.bulb-container div {
+.container div {
     color: #2F5373;
     font-size: 16px;
 }
@@ -15,6 +15,10 @@
 
 .text-left {
     text-align: left;
+}
+
+.text-center {
+    text-align: center;
 }
 
 .bulb-color {
