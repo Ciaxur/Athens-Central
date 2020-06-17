@@ -6,6 +6,7 @@ import calendar from '../Resources/images/calendar.png';
 import coldTemp from '../Resources/images/cold-temp.png';
 import warmTemp from '../Resources/images/warm-temp.png';
 import Icon from './Icon';
+import Event, { CalendarEvent } from './Event/EventHandler';
 
 const LIGHTS_IP = "192.168.0.97:3000";
 const PRESET_CLRS: string[] = [
@@ -21,9 +22,10 @@ const PRESET_CLRS: string[] = [
 
 interface Props {}
 interface States {
-    bulbs: BulbsQuery[],                // List of all Bulbs' Info
-    currentBulbAddr: string | null,     // Current Bulb in Focus
-    pickerColor: RGBColor,              // Color Picker's Current Color
+    bulbs: BulbsQuery[],                    // List of all Bulbs' Info
+    currentBulbAddr: string | null,         // Current Bulb in Focus
+    currentEventBulbAddr: string | null,    // Bulb in Forcus for Event
+    pickerColor: RGBColor,                  // Color Picker's Current Color
 }
 interface BulbsQuery {
     name: string,
@@ -35,10 +37,13 @@ interface BulbsQuery {
 };
 
 
+
+
 class Bulbs extends Component<Props, States> {
     // Indicate Manual Bulb State Update so that
     //  interval update doesn't mess with updating States
     private manualUpdate: boolean;
+    private events: CalendarEvent[][];
     
     constructor(props: Props) {
         super(props);
@@ -47,13 +52,17 @@ class Bulbs extends Component<Props, States> {
         this.state = {
             bulbs: [],
             currentBulbAddr: null,
+            currentEventBulbAddr: null,
             pickerColor: {
                 r: 255,
                 g: 255,
                 b: 255
             }
         };
+        
+        // Initialize Member Variables
         this.manualUpdate = false;
+        this.events = [];
         
         // Bind Methods
         this.bulbTrigger = this.bulbTrigger.bind(this);
@@ -75,6 +84,17 @@ class Bulbs extends Component<Props, States> {
                     // Sort Results based on Address
                     res.data = (res.data as BulbsQuery[])
                         .sort((a, b) => a.address > b.address ? 1 : -1);
+
+                    // TODO: Obtain Scheduled Event for each Bulb
+                    this.events = [];
+                    for(const b of res.data as BulbsQuery[]) {
+                        // TODO: Implement All Event Data here...
+                        const e: CalendarEvent[] = [{
+                            summary: `Bulb ${b.address}`,
+                            time: "12pm"
+                        }];
+                        this.events.push(e);
+                    }
                     
                     // Update State
                     if (!this.manualUpdate) {
@@ -208,11 +228,14 @@ class Bulbs extends Component<Props, States> {
                 bulb.cold_white = 100
             }
 
+            // Reset Color
+            bulb.color = { red: 0, green: 0, blue: 0 };
+
             // Make sure that Bulb IS on
             //  - turns on even if in off state
             bulb.power = true;
             
-            this.setState({bulbs: this.state.bulbs});
+            this.setState({ bulbs: this.state.bulbs });
         });
     }
     
@@ -227,7 +250,16 @@ class Bulbs extends Component<Props, States> {
                         <div className="bulb-item" key={index} >
                             
                             {/* Calendar */}
-                            <Icon img={calendar} width="18px" height="18px" />
+                            <span style={{ cursor: 'pointer' }} onClick={() => this.setState({ currentEventBulbAddr: bulb.address })}>
+                                <Icon img={calendar} width="18px" height="18px" />
+                            </span>
+
+                            {/* Timed Events */}
+                            {(this.state.currentEventBulbAddr && this.state.currentEventBulbAddr === bulb.address)
+                                ? <Event data={this.events[index]} />
+                                : <span />
+                            }
+                            
 
                             {/* Temperatures */}
                             <span 
@@ -260,7 +292,23 @@ class Bulbs extends Component<Props, States> {
                                         onChangeComplete={this.handleColorComplete}
                                         presetColors={PRESET_CLRS}
                                     />
-                                </div> : <span />
+                                </div>
+                                : <span />
+                            }
+
+                            {/* Transparent Clickable Div to Close Color Wheel or Event Menu */}
+                            {(this.state.currentBulbAddr !== null && this.state.currentBulbAddr === bulb.address) ||
+                                (this.state.currentEventBulbAddr && this.state.currentEventBulbAddr === bulb.address)
+                                ? <div style={{
+                                    left: 0,
+                                    top: 0,
+                                    position: 'absolute',
+                                    width: '100%',
+                                    height: '100%',
+                                    zIndex: 1
+                                }} onClick={() => { this.setState({ currentBulbAddr: null, currentEventBulbAddr: null }) }}>
+                                </div>
+                                : <span />
                             }
 
                             {/* Lamp Name and Address */}

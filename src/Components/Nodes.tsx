@@ -80,7 +80,7 @@ class Nodes extends Component<Props, State> {
                 <div className="col-4 text-center">
                     {/* Name, Address, and Battery */}
                     {this.state?.nodes.map((node, index) =>
-                        <span key={index} style={{ opacity: node.status === 'online' ? 1.0 : 0.6 }}>
+                        <span key={index} style={{ opacity: node.status === 'online' ? 1.0 : 0.4 }}>
                             <Icon
                                 img={this.getBatteryImage(node.battery)}
                                 width="18px"
