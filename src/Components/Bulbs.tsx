@@ -91,7 +91,7 @@ class Bulbs extends Component<Props, States> {
                         // TODO: Implement All Event Data here...
                         const e: CalendarEvent[] = [{
                             summary: `Bulb ${b.address}`,
-                            time: "12pm"
+                            time: new Date(Date.now()),     // TODO: Remove this :)
                         }];
                         this.events.push(e);
                     }

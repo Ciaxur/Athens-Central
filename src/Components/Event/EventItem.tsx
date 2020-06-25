@@ -6,7 +6,7 @@ import calendar_clock_img from '../../Resources/images/calendar-clock.png'
 interface Props {
     onClick?: () => void,
     summary: string,
-    time: string
+    time: Date
 }
 interface State {}
 
@@ -18,7 +18,8 @@ class EventItem extends Component<Props, State> {
                 <div className="event-item">
                     <div className="col-2"> <Icon img={calendar_clock_img} width="20px" height="20px" /> </div>
                     <div className="col-6">{this.props.summary}</div>
-                    <div className="col-2">{this.props.time}</div>
+                    {/* TODO: Implement Better Way to View Time */}
+                    <div className="col-2">{this.props.time.toDateString()}</div>
                 </div>
             </div>
         )
