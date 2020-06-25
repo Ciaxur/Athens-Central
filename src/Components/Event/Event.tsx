@@ -5,14 +5,15 @@ import '../Components.css';
 
 export interface CalendarEvent {
     summary: string,
-    time: string
+    time: Date
 }
 
 interface Props {
     data: CalendarEvent[]
 }
 interface State {
-    events: JSX.Element[]
+    events: JSX.Element[],
+    setEvent: boolean,          // Event Popup Set
 }
 
 
@@ -23,7 +24,8 @@ class Event extends Component<Props, State> {
 
         // Initiate State
         this.state = {
-            events: []
+            events: [],
+            setEvent: false,
         };
 
         // Populate State with Props
@@ -38,16 +40,30 @@ class Event extends Component<Props, State> {
     }
 
     /**
-     * Handles Adding a new Event | TODO: Implement non-test me
+     * Handles Adding a new Event
+     * 
+     * @param summary Summary of Event to be added
+     * @param dSeconds Delta Seconds from Now
      */
     private addEvent() {
         const data: CalendarEvent = {
             summary: "Test",
-            time: "12am",
+            time: new Date(),   // TODO: Fix this later...
         }
         
         this.props.data.push(data);
+
+        // TODO: Think about this idea?
+        // // Construct the Date
+        // const date = new Date(Date.now() + dSeconds);
         
+        // // Store Data
+        // this.props.data.push({
+        //     summary: summary,
+        //     time: date,
+        // });
+        
+        // Update State
         this.setState((prevState) => ({
             events: [...prevState.events, <EventItem data={data} />] // TODO: Just Testing
         }));
@@ -57,7 +73,10 @@ class Event extends Component<Props, State> {
         return(
             <div className="event-container" >
                 {/* Add Button | TODO: Add an Icon */}
-                <div onClick={this.addEvent} className="event-add">+</div>
+                <div onClick={() => this.setState({ setEvent: true })} className="event-add">+</div>
+
+                {/* TODO: Add a Component that gets the Event Data */}
+                {/* {this.state.setEvent && } */}
 
                 {/* Display all Event Items */}
                 {this.state.events.map((val, index) => <span key={index}>{val}</span>)}

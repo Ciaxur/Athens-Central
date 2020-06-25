@@ -65,7 +65,8 @@ class EventItem extends Component<Props, State> {
             const timeType = this.timeType.current?.value;
 
             this.props.data.summary = summary;
-            this.props.data.time = `${timeInput?.toString()} ${timeType}` || "";
+            // TODO: FIX: Fix this later
+            // this.props.data.time = `${timeInput?.toString()} ${timeType}` || "";
 
             this.setState({ finialized: true });
         }
