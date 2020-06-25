@@ -6,7 +6,7 @@ import calendar from '../Resources/images/calendar.png';
 import coldTemp from '../Resources/images/cold-temp.png';
 import warmTemp from '../Resources/images/warm-temp.png';
 import Icon from './Icon';
-import Event, { CalendarEvent } from './Event/EventHandler';
+import Event, { CalendarEvent } from './Event/Event';
 
 const LIGHTS_IP = "192.168.0.97:3000";
 const PRESET_CLRS: string[] = [

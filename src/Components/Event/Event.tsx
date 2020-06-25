@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import EventItem from './EventItem'
+import EventItem from './EventItem';
 import './Event.css';
 import '../Components.css';
 
@@ -29,7 +29,7 @@ class Event extends Component<Props, State> {
         // Populate State with Props
         for(const d of this.props.data) {
             this.state.events.push(
-                <EventItem summary={d.summary} time={d.time} />
+                <EventItem data={d} />
             );
         }
 
@@ -41,13 +41,15 @@ class Event extends Component<Props, State> {
      * Handles Adding a new Event | TODO: Implement non-test me
      */
     private addEvent() {
-        this.props.data.push({
+        const data: CalendarEvent = {
             summary: "Test",
-            time: "12am"
-        });
+            time: "12am",
+        }
+        
+        this.props.data.push(data);
         
         this.setState((prevState) => ({
-            events: [...prevState.events, <EventItem summary="Test" time="12am" />] // TODO: Just Testing
+            events: [...prevState.events, <EventItem data={data} />] // TODO: Just Testing
         }));
     }
 
