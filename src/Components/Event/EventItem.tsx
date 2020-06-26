@@ -7,8 +7,9 @@ import { CalendarEvent } from './Event';
 
 
 interface Props {
-    onClick?: () => void,
+    onDone?: (d : CalendarEvent) => void,       // Called when Event is Set with Data Object that was set
     data: CalendarEvent,
+    preset: boolean,                            // State of Data being Set or can BE Set
 }
 interface State {
     finialized: boolean,        // Finalized Event Set
@@ -24,7 +25,7 @@ class EventItem extends Component<Props, State> {
 
         // Initiate State
         this.state = {
-            finialized: false,
+            finialized: this.props.preset,
         };
 
         // Bind Member Methods
@@ -47,7 +48,6 @@ class EventItem extends Component<Props, State> {
     private validateEventInput() {
         // Obtain Time Input
         const timeInput = this.timeInput.current ? parseInt(this.timeInput.current.value) : null;
-        console.log(timeInput);
         
         // Validate Time Input is a Number | Highlight in Red!
         if (timeInput === null) {
@@ -60,18 +60,30 @@ class EventItem extends Component<Props, State> {
         }
 
         else {
-            // TODO: Somehow Update data in Event.tsx
             const summary = this.summaryInput.current?.value;
             const timeType = this.timeType.current?.value;
 
+            // Store Summary
             this.props.data.summary = summary;
-            // TODO: FIX: Fix this later
-            // this.props.data.time = `${timeInput?.toString()} ${timeType}` || "";
 
+            // Apply Date based on Time Input
+            let dt = timeInput * 1000;
+            if (timeType === 'min')
+                dt *= 60;
+            else if (timeType === 'hr')
+                dt *= 60 * 60;
+            else if (timeType === 'days')
+                dt *= 60 * 60 * 24;
+            
+            this.props.data.time = new Date(Date.now() + dt);
+            
+            // All Done :)
             this.setState({ finialized: true });
-        }
 
-        
+            // Call onDone with Finished Data!
+            // Returning the Data to Event.tsx
+            this.props.onDone && this.props.onDone(this.props.data);
+        }
     }
 
     render() {
@@ -81,7 +93,7 @@ class EventItem extends Component<Props, State> {
                     <div className="event-item">
                         <div className="col-2"> <Icon img={calendar_clock_img} width="20px" height="20px" /> </div>
                         <div className="col-6">{this.props.data.summary}</div>
-                        <div className="col-2">{this.props.data.time}</div>
+                        <div className="col-2">{this.props.data.time.toDateString()}</div>
                     </div>
                     :
                     <div className="event-item">
@@ -101,9 +113,7 @@ class EventItem extends Component<Props, State> {
                             />
                         </div>
 
-                        {/* Time Input 
-                                TODO: Add Styling to Time Type
-                        */}
+                        {/* Time Input | TODO: Add Styling to Time Type */}
                         <div className="col-1">
                             <input
                                 style={{ width: '30px', textAlign: 'right', marginRight: '5px' }}

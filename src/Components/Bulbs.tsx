@@ -27,7 +27,7 @@ interface States {
     currentEventBulbAddr: string | null,    // Bulb in Forcus for Event
     pickerColor: RGBColor,                  // Color Picker's Current Color
 }
-interface BulbsQuery {
+export interface BulbsQuery {
     name: string,
     address: string,
     power: boolean,
@@ -89,11 +89,11 @@ class Bulbs extends Component<Props, States> {
                     this.events = [];
                     for(const b of res.data as BulbsQuery[]) {
                         // TODO: Implement All Event Data here...
-                        const e: CalendarEvent[] = [{
-                            summary: `Bulb ${b.address}`,
-                            time: new Date(Date.now()),     // TODO: Remove this :)
-                        }];
-                        this.events.push(e);
+                        // const e: CalendarEvent[] = [{
+                        //     summary: `Bulb ${b.address}`,
+                        //     time: new Date(Date.now()),
+                        // }];
+                        this.events.push([]);
                     }
                     
                     // Update State
@@ -256,7 +256,7 @@ class Bulbs extends Component<Props, States> {
 
                             {/* Timed Events */}
                             {(this.state.currentEventBulbAddr && this.state.currentEventBulbAddr === bulb.address)
-                                ? <Event data={this.events[index]} />
+                                ? <Event bulb={bulb} data={this.events[index]} />
                                 : <span />
                             }
                             

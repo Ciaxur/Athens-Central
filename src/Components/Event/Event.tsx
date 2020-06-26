@@ -1,7 +1,10 @@
 import React, { Component } from 'react';
 import EventItem from './EventItem';
+import axios from 'axios';
 import './Event.css';
 import '../Components.css';
+import { NodeEventExec } from '../../ServerInterfaces/Requests';
+import { BulbsQuery } from '../Bulbs';
 
 export interface CalendarEvent {
     summary: string,
@@ -9,15 +12,17 @@ export interface CalendarEvent {
 }
 
 interface Props {
-    data: CalendarEvent[]
+    data: CalendarEvent[],
+    bulb: BulbsQuery,               // Bulb Reference of current Event
 }
 interface State {
     events: JSX.Element[],
-    setEvent: boolean,          // Event Popup Set
+    newEvent: JSX.Element[],          // Event Popup Set
 }
 
 
 class Event extends Component<Props, State> {
+    private newEvent: CalendarEvent;
 
     constructor(props: Props) {
         super(props);
@@ -25,13 +30,19 @@ class Event extends Component<Props, State> {
         // Initiate State
         this.state = {
             events: [],
-            setEvent: false,
+            newEvent: [],
+        };
+
+        // Initialize Member Variables
+        this.newEvent = {
+            summary: '',
+            time: new Date(),
         };
 
         // Populate State with Props
-        for(const d of this.props.data) {
+        for (const d of this.props.data) {
             this.state.events.push(
-                <EventItem data={d} />
+                <EventItem data={d} preset={true} />
             );
         }
 
@@ -42,43 +53,50 @@ class Event extends Component<Props, State> {
     /**
      * Handles Adding a new Event
      * 
-     * @param summary Summary of Event to be added
-     * @param dSeconds Delta Seconds from Now
+     * @param data - The Calendar Event to Add
+     * @param update - Whether to update the State or Not
      */
-    private addEvent() {
-        const data: CalendarEvent = {
-            summary: "Test",
-            time: new Date(),   // TODO: Fix this later...
-        }
+    private addEvent(d: CalendarEvent, update: boolean = false) {
+        // Keep Track of Data
+        this.props.data.push(d);
         
-        this.props.data.push(data);
-
-        // TODO: Think about this idea?
-        // // Construct the Date
-        // const date = new Date(Date.now() + dSeconds);
-        
-        // // Store Data
-        // this.props.data.push({
-        //     summary: summary,
-        //     time: date,
-        // });
+        // Update the Server
+        // DEBUG: Testing out the LOCALHOST Version,
+        //   change when done!!!
+        axios.post('http://localhost:3000/lights', {
+            action: 'event',
+            bulbAddr: this.props.bulb.address,
+            description: d.summary,
+            actionValue: {          // TODO: Testing 
+                action: 'setPower',
+                value: true,
+            } as NodeEventExec,
+            eventTime: d.time,
+            
+        }).then(res => console.log(res.data));
         
         // Update State
-        this.setState((prevState) => ({
-            events: [...prevState.events, <EventItem data={data} />] // TODO: Just Testing
-        }));
+        if(update)
+            this.setState((prevState) => ({
+                events: [...prevState.events, <EventItem data={d} preset={true} />],
+            }));
     }
 
     render() {
         return(
             <div className="event-container" >
-                {/* Add Button | TODO: Add an Icon */}
-                <div onClick={() => this.setState({ setEvent: true })} className="event-add">+</div>
+                {/* Add Button */}
+                <div
+                    onClick={() => { this.setState(prevState => ({
+                        newEvent: [...prevState.newEvent, <EventItem data={this.newEvent} preset={false} onDone={this.addEvent} />]
+                    }))}}
+                    className="event-add">+</div>
 
-                {/* TODO: Add a Component that gets the Event Data */}
+                {/* SET EVENT: Add a Component that gets the Event Data */}
                 {/* {this.state.setEvent && } */}
+                {this.state.newEvent.map((val, index) => <span key={index}>{val}</span>)}
 
-                {/* Display all Event Items */}
+                {/* DISPLAY: Display all Event Items */}
                 {this.state.events.map((val, index) => <span key={index}>{val}</span>)}
                 
             </div>
