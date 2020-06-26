@@ -1,7 +1,12 @@
+input:focus, select:focus, textarea:focus {
+    /* outline: none; */
+    outline-color: #9ACAEC;
+}
+
 .event-container {
     position: absolute;
     height: 200px;
-    width: 300px;
+    width: 350px;
     background-color: white;
 
     border-radius: 5px;
@@ -39,4 +44,13 @@
     border-right: none;
     border-left: none;
     display: flex;
+}
+
+
+.event-item > div, .event-item > div > div {
+    font-size: 14px;
+}
+
+.invalid-entry:focus {
+    outline-color: #F17272;
 }

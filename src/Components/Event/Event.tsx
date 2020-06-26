@@ -3,8 +3,9 @@ import EventItem from './EventItem';
 import axios from 'axios';
 import './Event.css';
 import '../Components.css';
-import { NodeEventExec } from '../../ServerInterfaces/Requests';
+import { NodeEventExec, NodeAction } from '../../ServerInterfaces/Requests';
 import { BulbsQuery } from '../Bulbs';
+import { LIGHTS_IP } from '../../Core/Constants';
 
 export interface CalendarEvent {
     summary: string,
@@ -22,8 +23,6 @@ interface State {
 
 
 class Event extends Component<Props, State> {
-    private newEvent: CalendarEvent;
-
     constructor(props: Props) {
         super(props);
 
@@ -33,11 +32,6 @@ class Event extends Component<Props, State> {
             newEvent: [],
         };
 
-        // Initialize Member Variables
-        this.newEvent = {
-            summary: '',
-            time: new Date(),
-        };
 
         // Populate State with Props
         for (const d of this.props.data) {
@@ -56,20 +50,21 @@ class Event extends Component<Props, State> {
      * @param data - The Calendar Event to Add
      * @param update - Whether to update the State or Not
      */
-    private addEvent(d: CalendarEvent, update: boolean = false) {
+    private addEvent(d: CalendarEvent, action: NodeAction, actionValue: string, update: boolean = false) {
         // Keep Track of Data
         this.props.data.push(d);
         
+        // Validate Data
+        const value = actionValue.toLowerCase() === 'on' ? true : false;
+        
         // Update the Server
-        // DEBUG: Testing out the LOCALHOST Version,
-        //   change when done!!!
-        axios.post('http://localhost:3000/lights', {
+        axios.post(`http://${LIGHTS_IP}/lights`, {
             action: 'event',
             bulbAddr: this.props.bulb.address,
             description: d.summary,
-            actionValue: {          // TODO: Testing 
-                action: 'setPower',
-                value: true,
+            actionValue: {
+                action: action,
+                value: value,
             } as NodeEventExec,
             eventTime: d.time,
             
@@ -88,7 +83,7 @@ class Event extends Component<Props, State> {
                 {/* Add Button */}
                 <div
                     onClick={() => { this.setState(prevState => ({
-                        newEvent: [...prevState.newEvent, <EventItem data={this.newEvent} preset={false} onDone={this.addEvent} />]
+                        newEvent: [...prevState.newEvent, <EventItem data={{ summary: '', time: new Date() }} preset={false} onDone={this.addEvent} />]
                     }))}}
                     className="event-add">+</div>
 

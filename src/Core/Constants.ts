@@ -1,0 +1,1 @@
+export const LIGHTS_IP = "192.168.0.97:3000";       // Lights IP and PORT for Server

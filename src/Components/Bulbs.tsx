@@ -7,8 +7,10 @@ import coldTemp from '../Resources/images/cold-temp.png';
 import warmTemp from '../Resources/images/warm-temp.png';
 import Icon from './Icon';
 import Event, { CalendarEvent } from './Event/Event';
+import { LIGHTS_IP } from '../Core/Constants';
+import { NodeEventRequest } from '../ServerInterfaces/Requests';
+import { NodeEvent } from '../ServerInterfaces/ServerInterfaces';
 
-const LIGHTS_IP = "192.168.0.97:3000";
 const PRESET_CLRS: string[] = [
     '#4A90E2',
     '#50E3C2',
@@ -43,7 +45,7 @@ class Bulbs extends Component<Props, States> {
     // Indicate Manual Bulb State Update so that
     //  interval update doesn't mess with updating States
     private manualUpdate: boolean;
-    private events: CalendarEvent[][];
+    private events: { [ip: string]: CalendarEvent[] };          // Event mapped to Bulb Address that holds Calendar Events
     
     constructor(props: Props) {
         super(props);
@@ -62,7 +64,7 @@ class Bulbs extends Component<Props, States> {
         
         // Initialize Member Variables
         this.manualUpdate = false;
-        this.events = [];
+        this.events = {};
         
         // Bind Methods
         this.bulbTrigger = this.bulbTrigger.bind(this);
@@ -85,29 +87,35 @@ class Bulbs extends Component<Props, States> {
                     res.data = (res.data as BulbsQuery[])
                         .sort((a, b) => a.address > b.address ? 1 : -1);
 
-                    // TODO: Obtain Scheduled Event for each Bulb
-                    this.events = [];
-                    for(const b of res.data as BulbsQuery[]) {
-                        // TODO: Implement All Event Data here...
-                        // const e: CalendarEvent[] = [{
-                        //     summary: `Bulb ${b.address}`,
-                        //     time: new Date(Date.now()),
-                        // }];
-                        this.events.push([]);
-                    }
-                    
+
                     // Update State
                     if (!this.manualUpdate) {
                         this.setState({
                             bulbs: res.data
                         });
-                    } 
-                    
+                    }
+
                     // Reset Manual Update State
                     else {
                         this.manualUpdate = false;
                     }
 
+                });
+
+            // Query Node Events
+            axios.get(`http://${LIGHTS_IP}/lights`, {
+                params: {
+                    type: 'event',
+                } as NodeEventRequest
+            })
+                .then(res => res.data.message)
+                .then(eventCollection => {
+                    // Obtain Scheduled Event for each Bulb
+                    this.events = {};   // Reset Events
+                    for(const addr in eventCollection) {
+                        this.events[addr] = eventCollection[addr].map((e: NodeEvent) => 
+                            ({ summary: e.description, time: new Date(e.date) } as CalendarEvent))
+                    }
                 });
         };
         updateBulbInfo();
@@ -256,7 +264,7 @@ class Bulbs extends Component<Props, States> {
 
                             {/* Timed Events */}
                             {(this.state.currentEventBulbAddr && this.state.currentEventBulbAddr === bulb.address)
-                                ? <Event bulb={bulb} data={this.events[index]} />
+                                ? <Event bulb={bulb} data={this.events[bulb.address] || []} />
                                 : <span />
                             }
                             
